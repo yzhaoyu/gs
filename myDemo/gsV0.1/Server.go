@@ -9,7 +9,7 @@ import (
 */
 func main() {
 	// 1.创建一个server句柄，使用gs的API
-	s := gnet.NewServer("[gs V0.1]")
+	s := gnet.NewServer("[gs V0.2]")
 	// 2.启动server
 	s.Serve()
 }
