@@ -24,7 +24,7 @@ func main() {
 
 	for {
 		// 2.链接调用write，写数据
-		_, err := conn.Write([]byte("Hello gs V0.2..."))
+		_, err := conn.Write([]byte("Hello gs V0.3..."))
 		if err != nil {
 			fmt.Println("write conn err", err)
 			return

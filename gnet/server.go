@@ -1,7 +1,6 @@
 package gnet
 
 import (
-	"errors"
 	"fmt"
 	"net"
 
@@ -18,18 +17,8 @@ type Server struct {
 	IP string
 	// 服务器监听的端口
 	Port int
-}
-
-// 定义当前客户端链接的所绑定handle api(目前这个handle是写死的，以后优化应该由用户自定义handle方法)
-func CallBackToClient(conn *net.TCPConn, data []byte, cnt int) error {
-	// 回显的业务
-	fmt.Println("[Conn Handle] CallBackToClient...")
-	if _, err := conn.Write(data[:cnt]); err != nil {
-		fmt.Println("write back buf err", err)
-		return errors.New("CallBackToCient error")
-	}
-
-	return nil
+	// 当前的Server添加一个router，server注册的链接对应得处理业务
+	Router giface.IRouter
 }
 
 // 启动服务器
@@ -65,7 +54,7 @@ func (s *Server) Start() {
 			}
 
 			// 将处理新连接的业务方法和conn进行绑定，得到我们的链接模块
-			dealConn := NewConnection(conn, cid, CallBackToClient)
+			dealConn := NewConnection(conn, cid, s.Router)
 			cid++
 
 			// 启动当前的链接业务处理
@@ -90,6 +79,12 @@ func (s *Server) Serve() {
 	select {}
 }
 
+// 路由功能，给当前的服务注册一个路由方法，供客户端的链接使用
+func (s *Server) AddRouter(router giface.IRouter) {
+	s.Router = router
+	fmt.Println("Add Router Success!")
+}
+
 /*
 	初始化Server模块的方法
 */
@@ -99,6 +94,7 @@ func NewServer(name string) giface.IServer {
 		IPVersion: "tcp4",
 		IP:        "0.0.0.0",
 		Port:      8999,
+		Router:    nil,
 	}
 
 	return s
