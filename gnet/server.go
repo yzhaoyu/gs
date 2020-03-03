@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/yzhaoyu/gs/giface"
+	"github.com/yzhaoyu/gs/utils"
 )
 
 // IServer的接口实现，定义一个Server的服务器模块
@@ -23,7 +24,14 @@ type Server struct {
 
 // 启动服务器
 func (s *Server) Start() {
-	fmt.Printf("[Start] Server Listenner at IP: %s, Port: %d is starting\n", s.IP, s.Port)
+	fmt.Printf("[Start] Server Name: %s, listenner at IP: %s, Port: %d is starting\n",
+		utils.GlobalObject.Name,
+		utils.GlobalObject.Host,
+		utils.GlobalObject.TcpPort)
+	fmt.Printf("[gs] Version %s, MaxConn %d, MaxPackageSize %d\n",
+		utils.GlobalObject.Version,
+		utils.GlobalObject.MaxConn,
+		utils.GlobalObject.MaxPackageSize)
 
 	go func() {
 		// 1.获取一个TCP的Addr
@@ -90,10 +98,10 @@ func (s *Server) AddRouter(router giface.IRouter) {
 */
 func NewServer(name string) giface.IServer {
 	s := &Server{
-		Name:      name,
+		Name:      utils.GlobalObject.Name,
 		IPVersion: "tcp4",
-		IP:        "0.0.0.0",
-		Port:      8999,
+		IP:        utils.GlobalObject.Host,
+		Port:      utils.GlobalObject.TcpPort,
 		Router:    nil,
 	}
 
