@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"time"
+
+	"github.com/yzhaoyu/gs/gnet"
 )
 
 /*
@@ -23,21 +26,42 @@ func main() {
 	}
 
 	for {
-		// 2.链接调用write，写数据
-		_, err := conn.Write([]byte("Hello gs V0.3..."))
+		// 发送封包的message消息, MsgID: 0
+		dp := gnet.NewDataPack()
+		binaryMsg, _ := dp.Pack(gnet.NewMsgPackage(0, []byte("gsV0.5 client Test Message")))
+		_, err := conn.Write(binaryMsg)
 		if err != nil {
-			fmt.Println("write conn err", err)
+			fmt.Println("write error", err)
 			return
 		}
 
-		buf := make([]byte, 512)
-		cnt, err := conn.Read(buf)
-		if err != nil {
-			fmt.Println("read buf error")
-			return
+		// 服务器就应该给我们回复一个message数据，MsgID：1 pingpingping
+		// 1先读取流中的head部分，得到ID和dataLen
+		binaryHead := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(conn, binaryHead); err != nil {
+			fmt.Println("read head error ", err)
+			break
 		}
 
-		fmt.Printf("server call back: %s, cnt = %d\n", buf, cnt)
+		// 将二进制的head拆包到msg结构体中
+		msgHead, err := dp.Unpack(binaryHead)
+		if err != nil {
+			fmt.Println("client unpack msgHead error ", err)
+			break
+		}
+
+		if msgHead.GetMsgLen() > 0 {
+			// 2再根据DataLen进行第二次读取，将data读出来
+			msg := msgHead.(*gnet.Message)
+			msg.Data = make([]byte, msg.GetMsgLen())
+
+			if _, err := io.ReadFull(conn, msg.Data); err != nil {
+				fmt.Println("read msg data error, ", err)
+				return
+			}
+
+			fmt.Println("----> Recv Server Msg: ID = ", msg.Id, ", len = ", msg.DataLen, ", data = ", string(msg.Data))
+		}
 
 		// CPU阻塞
 		time.Sleep(1 * time.Second)

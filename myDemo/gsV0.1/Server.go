@@ -16,36 +16,20 @@ type PingRouter struct {
 	gnet.BaseRouter
 }
 
-// Test PreHandle
-func (this *PingRouter) PreHandle(request giface.IRequest) {
-	fmt.Println("Call Router PreHandle...")
-	_, err := request.GetConnection().GetTCPConnection().Write([]byte("before ping...\n"))
-	if err != nil {
-		fmt.Println("call back before ping error")
-	}
-}
-
 // Test Handle
 func (this *PingRouter) Handle(request giface.IRequest) {
 	fmt.Println("Call Router Handle...")
-	_, err := request.GetConnection().GetTCPConnection().Write([]byte("ping...ping...ping\n"))
+	// 先读取客户端的数据，再回写ping...ping...ping
+	fmt.Println("recv from client : msgId=", request.GetMsgID(), ", data=", string(request.GetData()))
+	err := request.GetConnection().SendMsg(1, []byte("ping...ping..ping"))
 	if err != nil {
-		fmt.Println("call back ping...ping...ping error")
-	}
-}
-
-// Test PostHandle
-func (this *PingRouter) PostHandle(request giface.IRequest) {
-	fmt.Println("Call Router PostHandle...")
-	_, err := request.GetConnection().GetTCPConnection().Write([]byte("after ping...\n"))
-	if err != nil {
-		fmt.Println("call back after ping error")
+		fmt.Println(err)
 	}
 }
 
 func main() {
 	// 1.创建一个server句柄，使用gs的API
-	s := gnet.NewServer("[gs V0.3]")
+	s := gnet.NewServer("[gs V0.5]")
 
 	// 2.给当前gs框架添加一个自定义的router
 	s.AddRouter(&PingRouter{})
