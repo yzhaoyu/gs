@@ -28,18 +28,18 @@ type Connection struct {
 	// 告知当前链接已经退出的/停止 channel
 	ExitChan chan bool
 
-	// 该链接处理的方法Router
-	Router giface.IRouter
+	// 消息的管理MsgID和对应的处理业务API关系
+	MsgHandler giface.IMsgHandle
 }
 
 // 初始化链接模块的方法
-func NewConnection(conn *net.TCPConn, connID uint32, router giface.IRouter) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, msgHandler giface.IMsgHandle) *Connection {
 	c := &Connection{
-		Conn:     conn,
-		ConnID:   connID,
-		Router:   router,
-		isClosed: false,
-		ExitChan: make(chan bool, 1),
+		Conn:       conn,
+		ConnID:     connID,
+		MsgHandler: msgHandler,
+		isClosed:   false,
+		ExitChan:   make(chan bool, 1),
 	}
 
 	return c
@@ -52,13 +52,6 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		// 读取客户端的数据到buf中，最大512字节
-		/* buf := make([]byte, utils.GlobalObject.MaxPackageSize)
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("recv buf err", err)
-			continue
-		} */
 
 		// 创建一个拆包解包对象
 		dp := NewDataPack()
@@ -94,11 +87,9 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 
-		go func(request giface.IRequest) {
-			c.Router.PreHandle(request)
-			c.Router.Handle(request)
-			c.Router.PostHandle(request)
-		}(&req)
+		// 从路由中找到注册绑定的Conn对应的router调用
+		// 根据绑定好的MsgID找到对应处理api业务
+		go c.MsgHandler.DoMsgHandler(&req)
 	}
 }
 

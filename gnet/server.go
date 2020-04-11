@@ -18,8 +18,8 @@ type Server struct {
 	IP string
 	// 服务器监听的端口
 	Port int
-	// 当前的Server添加一个router，server注册的链接对应得处理业务
-	Router giface.IRouter
+	// 当前的Server的消息管理模块，用来绑定MsgID和对应的处理业务API关系
+	MsgHandler giface.IMsgHandle
 }
 
 // 启动服务器
@@ -62,7 +62,7 @@ func (s *Server) Start() {
 			}
 
 			// 将处理新连接的业务方法和conn进行绑定，得到我们的链接模块
-			dealConn := NewConnection(conn, cid, s.Router)
+			dealConn := NewConnection(conn, cid, s.MsgHandler)
 			cid++
 
 			// 启动当前的链接业务处理
@@ -88,8 +88,8 @@ func (s *Server) Serve() {
 }
 
 // 路由功能，给当前的服务注册一个路由方法，供客户端的链接使用
-func (s *Server) AddRouter(router giface.IRouter) {
-	s.Router = router
+func (s *Server) AddRouter(msgID uint32, router giface.IRouter) {
+	s.MsgHandler.AddRouter(msgID, router)
 	fmt.Println("Add Router Success!")
 }
 
@@ -98,11 +98,11 @@ func (s *Server) AddRouter(router giface.IRouter) {
 */
 func NewServer(name string) giface.IServer {
 	s := &Server{
-		Name:      utils.GlobalObject.Name,
-		IPVersion: "tcp4",
-		IP:        utils.GlobalObject.Host,
-		Port:      utils.GlobalObject.TcpPort,
-		Router:    nil,
+		Name:       utils.GlobalObject.Name,
+		IPVersion:  "tcp4",
+		IP:         utils.GlobalObject.Host,
+		Port:       utils.GlobalObject.TcpPort,
+		MsgHandler: NewMsgHandle(),
 	}
 
 	return s
