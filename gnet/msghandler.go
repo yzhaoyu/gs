@@ -33,7 +33,7 @@ func (mh *MsgHandle) DoMsgHandler(request giface.IRequest) {
 	// 2.根据MsgID调度对应router业务即可
 	handler.PreHandle(request)
 	handler.Handle(request)
-	handler.PostHandler(request)
+	handler.PostHandle(request)
 }
 
 // 为消息添加具体的处理逻辑
