@@ -42,7 +42,7 @@ func (this *HelloRouter) Handle(request giface.IRequest) {
 
 func main() {
 	// 1.创建一个server句柄，使用gs的API
-	s := gnet.NewServer("[gs V0.7]")
+	s := gnet.NewServer("[gs V0.8]")
 
 	// 2.给当前gs框架添加一个自定义的router
 	s.AddRouter(0, &PingRouter{})

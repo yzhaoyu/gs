@@ -14,7 +14,7 @@ import (
 */
 
 func main() {
-	fmt.Println("client0 start...")
+	fmt.Println("client0 starts...")
 
 	time.Sleep(1 * time.Second)
 
@@ -28,7 +28,7 @@ func main() {
 	for {
 		// 发送封包的message消息, MsgID: 0
 		dp := gnet.NewDataPack()
-		binaryMsg, _ := dp.Pack(gnet.NewMsgPackage(0, []byte("gsV0.7 client0 Test Message")))
+		binaryMsg, _ := dp.Pack(gnet.NewMsgPackage(0, []byte("gsV0.8 client0 Test Message")))
 		_, err := conn.Write(binaryMsg)
 		if err != nil {
 			fmt.Println("write error", err)
