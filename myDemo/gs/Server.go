@@ -40,14 +40,32 @@ func (this *HelloRouter) Handle(request giface.IRequest) {
 	}
 }
 
+// 创建链接之后执行钩子函数
+func DoConnectionBegin(conn giface.IConnection) {
+	fmt.Println("===> DoConnectionBegin is called...")
+	if err := conn.SendMsg(202, []byte("DoConnection BEGIN")); err != nil {
+		fmt.Println(err)
+	}
+}
+
+// 链接断开之前需要执行的函数
+func DoConnectionLost(conn giface.IConnection) {
+	fmt.Println("===> DoConnectionLost is Called...")
+	fmt.Println("connID = ", conn.GetConnID(), " is lost...")
+}
+
 func main() {
 	// 1.创建一个server句柄，使用gs的API
-	s := gnet.NewServer("[gs V0.8]")
+	s := gnet.NewServer("[gs V0.9]")
 
-	// 2.给当前gs框架添加一个自定义的router
+	// 2. 注册链接Hook钩子函数
+	s.SetOnConnStart(DoConnectionBegin)
+	s.SetOnConnStop(DoConnectionLost)
+
+	// 3.给当前gs框架添加一个自定义的router
 	s.AddRouter(0, &PingRouter{})
 	s.AddRouter(1, &HelloRouter{})
 
-	// 3.启动server
+	// 4.启动server
 	s.Serve()
 }
