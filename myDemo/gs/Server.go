@@ -46,17 +46,34 @@ func DoConnectionBegin(conn giface.IConnection) {
 	if err := conn.SendMsg(202, []byte("DoConnection BEGIN")); err != nil {
 		fmt.Println(err)
 	}
+
+	// 给当前的链接属性设置一些属性
+	fmt.Println("Set conn property...")
+	conn.SetProperty("Name", "雍昭宇-Tencent")
+	conn.SetProperty("Github", "https://github.com/yzhaoyu")
+	conn.SetProperty("Email", "yongchiuyu@gmail.com")
 }
 
 // 链接断开之前需要执行的函数
 func DoConnectionLost(conn giface.IConnection) {
 	fmt.Println("===> DoConnectionLost is Called...")
 	fmt.Println("connID = ", conn.GetConnID(), " is lost...")
+
+	// 获取链接属性
+	if name, err := conn.GetProperty("Name"); err == nil {
+		fmt.Println("Name = ", name)
+	}
+	if github, err := conn.GetProperty("Github"); err == nil {
+		fmt.Println("Github = ", github)
+	}
+	if email, err := conn.GetProperty("Email"); err == nil {
+		fmt.Println("Email = ", email)
+	}
 }
 
 func main() {
 	// 1.创建一个server句柄，使用gs的API
-	s := gnet.NewServer("[gs V0.9]")
+	s := gnet.NewServer("[gs V0.10]")
 
 	// 2. 注册链接Hook钩子函数
 	s.SetOnConnStart(DoConnectionBegin)

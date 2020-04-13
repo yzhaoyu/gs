@@ -1,5 +1,5 @@
 {
-    "Name": "gs V0.9 demoServerApp",
+    "Name": "gs V0.10 demoServerApp",
     "Host": "127.0.0.1",
     "TcpPort": 8999,
     "MaxConn": 2,
